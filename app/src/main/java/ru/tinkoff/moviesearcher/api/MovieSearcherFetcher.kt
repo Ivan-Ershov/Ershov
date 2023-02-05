@@ -30,14 +30,15 @@ class MovieSearcherFetcher {
         movieSearcherApi = retrofit.create(MovieSearcherApi::class.java)
     }
 
-    fun getMoviesTop(page: Int = 1): LiveData<List<Movie>> {
-        val responseLiveData: MutableLiveData<List<Movie>> = MutableLiveData()
+    fun getMoviesTop(page: Int = 1): LiveData<List<Movie>?> {
+        val responseLiveData: MutableLiveData<List<Movie>?> = MutableLiveData()
         val movieSearcherRequest: Call<MoviesTopResponse> = movieSearcherApi.getMoviesTop(page=page)
 
         movieSearcherRequest.enqueue(object : Callback<MoviesTopResponse> {
 
             override fun onFailure(call: Call<MoviesTopResponse>, t: Throwable) {
                 Log.e(TAG, "Failure", t)
+                responseLiveData.value = null
             }
 
             override fun onResponse(call: Call<MoviesTopResponse>,
@@ -55,14 +56,15 @@ class MovieSearcherFetcher {
         return responseLiveData
     }
 
-    fun getMovie(id: Int): LiveData<MovieDetail> {
-        val responseLiveData: MutableLiveData<MovieDetail> = MutableLiveData()
+    fun getMovie(id: Int): LiveData<MovieDetail?> {
+        val responseLiveData: MutableLiveData<MovieDetail?> = MutableLiveData()
         val movieSearcherRequest: Call<MovieDetail> = movieSearcherApi.getMovie(id=id)
 
         movieSearcherRequest.enqueue(object : Callback<MovieDetail>{
 
             override fun onFailure(call: Call<MovieDetail>, t: Throwable) {
                 Log.e(TAG, "Failure", t)
+                responseLiveData.value = null
             }
 
             override fun onResponse(call: Call<MovieDetail>, response: Response<MovieDetail>) {

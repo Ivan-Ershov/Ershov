@@ -1,18 +1,17 @@
 package ru.tinkoff.moviesearcher
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,6 +28,9 @@ class MovieListFragment : Fragment() {
     private var callbacks: Callbacks? = null
     private lateinit var movieListViewModel: MovieListViewModel
     private lateinit var movieRecyclerView: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var movieLoadError: LinearLayoutCompat
+    private lateinit var repeatButton: Button
     private lateinit var thumbnailDownloader: ThumbnailDownloader<MovieHolder>
 
     override fun onAttach(context: Context) {
@@ -54,6 +56,7 @@ class MovieListFragment : Fragment() {
 
     }
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -68,6 +71,22 @@ class MovieListFragment : Fragment() {
 
         movieRecyclerView = view.findViewById(R.id.movie_recycler_view)
         movieRecyclerView.layoutManager = LinearLayoutManager(context)
+        progressBar = view.findViewById(R.id.process)
+        movieLoadError = view.findViewById(R.id.movie_load_error)
+        repeatButton = view.findViewById(R.id.repeat)
+
+        repeatButton.setOnClickListener {
+            movieLoadError.visibility = View.INVISIBLE
+            progressBar.visibility = View.VISIBLE
+            movieListViewModel.repeatLoad()
+
+            movieListViewModel.moviesLiveData.observe(
+                viewLifecycleOwner
+            ) { movieDetail ->
+                movieListObserver(movieDetail)
+            }
+
+        }
 
         return view
     }
@@ -75,11 +94,25 @@ class MovieListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         movieListViewModel.moviesLiveData.observe(
-            viewLifecycleOwner,
-            Observer { movies ->
-                movieRecyclerView.adapter = MovieAdapter(movies)
-            }
-        )
+            viewLifecycleOwner
+        ) { movies ->
+            movieListObserver(movies)
+        }
+    }
+
+    private fun movieListObserver(movies: List<Movie>?) {
+        progressBar.visibility = View.INVISIBLE
+
+        if (movies == null) {
+            movieLoadError.visibility = View.INVISIBLE
+            movieLoadError.visibility = View.VISIBLE
+        } else {
+            movieLoadError.visibility = View.INVISIBLE
+            movieRecyclerView.visibility = View.VISIBLE
+
+            movieRecyclerView.adapter = MovieAdapter(movies)
+
+        }
     }
 
     override fun onDetach() {

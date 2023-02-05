@@ -7,6 +7,10 @@ import ru.tinkoff.moviesearcher.model.Movie
 
 class MovieListViewModel : ViewModel() {
 
-    val moviesLiveData: LiveData<List<Movie>> = MovieSearcherFetcher().getMoviesTop()
+    var moviesLiveData: LiveData<List<Movie>?> = MovieSearcherFetcher().getMoviesTop()
+
+    fun repeatLoad() {
+        moviesLiveData = MovieSearcherFetcher().getMoviesTop()
+    }
 
 }

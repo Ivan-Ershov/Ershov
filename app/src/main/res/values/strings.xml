@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MovieSearcher</string>
+    <string name="load_error">Произошла ошибка при загрузке данных, проверьте подключение к сети</string>
+    <string name="repeat_button">Повторить</string>
 </resources>
