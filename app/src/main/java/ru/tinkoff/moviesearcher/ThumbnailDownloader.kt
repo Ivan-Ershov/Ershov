@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
 import android.util.Log
+import android.util.LruCache
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -14,11 +15,15 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "ThumbnailDownloader"
 private const val MESSAGE_DOWNLOAD = 0
+private const val MAX_BITMAPS_IN_CACHE = 10
 
 class ThumbnailDownloader<in T>(
     private val responseHandler: Handler,
     private val onThumbnailDownloaded: (T, Bitmap) -> Unit
 ): HandlerThread(TAG) {
+
+    private val memoryCache = LruCache<String, Bitmap>(MAX_BITMAPS_IN_CACHE)
+
 
     val fragmentLifecycleObserver: LifecycleObserver =
         object : LifecycleObserver {
@@ -81,7 +86,11 @@ class ThumbnailDownloader<in T>(
 
     private fun handleRequest(target: T) {
         val url = requestMap[target] ?: return
-        val bitmap = movieSearcherFetcher.getPhoto(url) ?: return
+
+        var bitmap = memoryCache[url]
+        if (bitmap == null) {
+            bitmap = movieSearcherFetcher.getPhoto(url) ?: return
+        }
 
         responseHandler.post(Runnable {
             if (requestMap[target] != url || hasQuit) {

@@ -1,7 +1,8 @@
 package ru.tinkoff.moviesearcher
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatActivity
 
 class MovieSearcherActivity : AppCompatActivity(), MovieListFragment.Callbacks {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,10 +21,18 @@ class MovieSearcherActivity : AppCompatActivity(), MovieListFragment.Callbacks {
 
     override fun onMovieSelected(movieId: Int) {
         val fragment = MovieFragment.newInstance(movieId)
-        supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .addToBackStack(null)
-            .commit()
+
+        if (findViewById<FrameLayout>(R.id.detail_fragment_container) == null) {
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        } else {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.detail_fragment_container, fragment)
+                .commit()
+        }
+
     }
 }
